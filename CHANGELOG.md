@@ -21,7 +21,7 @@
 
 ### Infrastructure
 - Makefile：build/release/test/generate/dist/clean/help，交叉编译 5 平台，版本号通过 ldflags 注入
-- Dockerfile：多阶段构建（golang:1.23 → alpine:3.21），非 root 用户
+- Dockerfile：多阶段构建（golang:alpine → alpine:latest），非 root 用户
 - GitHub Actions CI：4 阶段管道（lint → 安全扫描 → 构建测试 → Docker）
 - GitHub Actions Release：打 tag 自动构建并发布到 Releases
 - `.gitignore`：排除编译产物、IDE 配置、临时文件

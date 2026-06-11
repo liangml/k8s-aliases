@@ -7,7 +7,7 @@
 
 ```bash
 # 方式一：下载预编译二进制
-# 从 https://github.com/liangml/kubectl-aliases/releases 下载对应平台版本
+# 从 https://github.com/liangml/k8s-aliases/releases 下载对应平台版本
 # macOS Intel:    kubectl-aliases-darwin-amd64.gz
 # macOS M1/M2:   kubectl-aliases-darwin-arm64.gz
 # Linux x86_64:  kubectl-aliases-linux-amd64.gz
@@ -19,6 +19,13 @@
 
 # 在 .bashrc / .zshrc 中添加
 [ -f ~/.kubectl_aliases ] && source ~/.kubectl_aliases
+```
+
+```bash
+# Fish shell
+./kubectl-aliases -shell fish -o ~/.config/fish/conf.d/kubectl_aliases.fish
+# 在 ~/.config/fish/config.fish 中添加
+echo 'source ~/.config/fish/conf.d/kubectl_aliases.fish' >> ~/.config/fish/config.fish
 ```
 
 ```bash
@@ -36,6 +43,7 @@ k[作用域][动词][资源][修饰符]
 |------|--------|------|
 | 作用域 | 空 / sys | 默认 / kube-system |
 | 动词 | g / d / del | get / describe / delete |
+| 特殊 | l / ex / pf / p | logs / exec / port-forward / proxy（无资源类型） |
 | 资源 | po / dep / sts / svc / ing / cm / sec / no / ns | pods / deployment / statefulset / service / ingress / configmap / secret / nodes / namespaces |
 | 格式 | oyaml / owide / ojson / sl / w | -o=yaml / -o=wide / -o=json / --show-labels / --watch |
 | 范围 | all / n / l / f | --all-namespaces / --namespace / -l / --recursive -f |
@@ -256,7 +264,7 @@ make clean     # 清理
 
 ## 下载产物
 
-每个版本都包含以下可直接下载的产物（[Releases 页面](https://github.com/liangml/kubectl-aliases/releases)）：
+每个版本都包含以下可直接下载的产物（[Releases 页面](https://github.com/liangml/k8s-aliases/releases)）：
 
 | 文件 | 说明 |
 |------|------|
