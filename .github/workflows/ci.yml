@@ -76,7 +76,7 @@ jobs:
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: "."
-          ignore_paths: dist .git vendor
+          ignore_paths: dist .git vendor scripts
 
       - name: Upload cross-compiled binaries
         uses: actions/upload-artifact@v4
