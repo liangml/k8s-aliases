@@ -27,15 +27,11 @@ jobs:
 
       # 生成别名文件
       - name: Generate alias files
-        run: make generate
-        env:
-          VERSION: ${{ github.ref_name }}
+        run: make generate VERSION=${{ github.ref_name }}
 
       # 交叉编译二进制
       - name: Cross-compile
-        run: make release
-        env:
-          VERSION: ${{ github.ref_name }}
+        run: make release VERSION=${{ github.ref_name }}
 
       # 打包为单个 tar.gz / zip
       - name: Package release artifacts
@@ -64,6 +60,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: kubectl-aliases ${{ github.ref_name }}
+          generate_release_notes: true
           body: |
             ## kubectl-aliases ${{ github.ref_name }}
 

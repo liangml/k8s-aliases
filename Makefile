@@ -1,5 +1,5 @@
 APP     := kubectl-aliases
-VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 
 # 目标平台: OS × Arch
 BUILDS := \
