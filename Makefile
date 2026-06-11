@@ -40,7 +40,8 @@ dist: generate release ## 构建全部产物（别名文件 + 交叉编译）
 	ls -lh .kubectl_aliases .kubectl_aliases.fish dist/
 
 .PHONY: integration-test
-integration-test: build ## 在 kind 集群上运行端到端集成测试
+integration-test: ## 在 kind 集群上运行端到端集成测试
+	go build -ldflags="-X main.version=$(VERSION)" -o $(APP) main.go
 	./scripts/integration-test.sh
 
 .PHONY: clean
