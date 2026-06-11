@@ -52,24 +52,24 @@ test: build ## 全面验证：烟雾测试 → 总量 → 去重 → 互斥 → 
 	check_alias() { bash -c 'unset _K8S_ALIAS_LOADED; source /tmp/_kubectl_aliases_test && alias "$$1" >/dev/null 2>&1' _ "$$1" && ok "$$1" || fail "$$1 missing"; }; \
 	check_cmd() { local g=; g=$$(bash -c 'unset _K8S_ALIAS_LOADED; source /tmp/_kubectl_aliases_test && alias "$$1" 2>/dev/null' _ "$$1"); [ "$$g" = "alias $$1='$$2'" ] && ok "$$1" || fail "$$1 (expected: $$2)"; }; \
 	\
-	echo "=== 1/7 烟雾测试 ==="; \
+	echo "=== 1/6 烟雾测试 ==="; \
 	check_alias kgpo; check_alias kdelpo; \
 	./$(APP) --version 2>&1 | grep -q . && ok "--version" || fail "--version"; \
 	\
-	echo "=== 2/7 总量 691 ==="; \
+	echo "=== 2/6 总量 691 ==="; \
 	c=$$(bash -c 'unset _K8S_ALIAS_LOADED; source /tmp/_kubectl_aliases_test && alias | grep -c kubectl'); \
 	[ "$$c" = "691" ] && ok "total=691" || fail "total=$$c (expected 691)"; \
 	\
-	echo "=== 3/7 去重 ==="; \
+	echo "=== 3/6 去重 ==="; \
 	d=$$(grep '^alias' /tmp/_kubectl_aliases_test | sed 's/^alias \([^=]*\)=.*/\1/' | sort | uniq -d); \
 	[ -z "$$d" ] && ok "no dupes" || fail "dupes: $$d"; \
 	\
-	echo "=== 4/7 互斥组合 ==="; \
+	echo "=== 4/6 互斥组合 ==="; \
 	grep -q 'no.*--all-namespaces\|ns.*--all-namespaces' /tmp/_kubectl_aliases_test && fail "no/ns+all" || ok "no/ns+all excluded"; \
 	grep -q 'ksys.*--all-namespaces' /tmp/_kubectl_aliases_test && fail "sys+all" || ok "sys+all excluded"; \
 	grep '^alias' /tmp/_kubectl_aliases_test | grep -qE '(oyaml.*owide|owide.*oyaml|oyaml.*ojson|ojson.*owide)' && fail "conflicting mods" || ok "no conflicting mods"; \
 	\
-	echo "=== 5/7 关键别名精确匹配 ==="; \
+	echo "=== 5/6 关键别名精确匹配 ==="; \
 	check_cmd kgpo   'kubectl get pods'; \
 	check_cmd kdelpo 'kubectl delete pods'; \
 	check_cmd ksysg  'kubectl get --namespace=kube-system'; \
@@ -79,13 +79,9 @@ test: build ## 全面验证：烟雾测试 → 总量 → 去重 → 互斥 → 
 	check_cmd kl     'kubectl logs'; \
 	check_cmd kex    'kubectl exec -i -t'; \
 	\
-	echo "=== 6/7 fish 输出 ==="; \
+	echo "=== 6/6 fish 输出 ==="; \
 	fc=$$(./$(APP) -shell fish 2>/dev/null | grep -c '^abbr'); \
 	[ "$$fc" = "691" ] && ok "fish=691" || fail "fish=$$fc (expected 691)"; \
-	\
-	echo "=== 7/7 go vet ==="; \
-	go vet ./... 2>&1 && ok "go vet" || fail "go vet"; \
-	\
 	echo; \
 	if [ "$$fail" -eq 0 ]; then echo "=== 全部通过 ==="; else echo "=== $$fail 个失败 ==="; fi; \
 	exit $$fail

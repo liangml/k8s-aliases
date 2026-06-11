@@ -1,0 +1,7 @@
+# Dependabot: 自动更新 GitHub Actions 版本
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

@@ -9,6 +9,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   # ── Stage 1: 代码质量检查 ──────────────────────────────────────────────
@@ -22,6 +23,7 @@ jobs:
         with:
           go-version: "1.26"
           check-latest: true
+          cache: true
 
       - name: go vet
         run: go vet ./...
@@ -53,6 +55,7 @@ jobs:
         with:
           go-version: "1.26"
           check-latest: true
+          cache: true
 
       - name: Build (current platform)
         run: make build
