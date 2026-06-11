@@ -47,7 +47,7 @@ clean: ## 清理构建产物
 test: build ## 生成并验证
 	./$(APP) -o /tmp/_kubectl_aliases_test
 	@echo "=== alias smoke test ==="
-	bash -c 'source /tmp/_kubectl_aliases_test && alias kgpo && alias kdelpo && echo "PASS"'
+	bash -c 'unset _K8S_ALIAS_LOADED; source /tmp/_kubectl_aliases_test && alias kgpo && alias kdelpo && echo "PASS"'
 	@echo "=== --version ==="
 	./$(APP) --version | grep -q . && echo "PASS"
 	@echo "=== go vet ==="
