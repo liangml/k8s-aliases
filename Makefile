@@ -39,6 +39,10 @@ dist: generate release ## 构建全部产物（别名文件 + 交叉编译）
 	@echo "=== dist 完成 ==="
 	ls -lh .kubectl_aliases .kubectl_aliases.fish dist/
 
+.PHONY: integration-test
+integration-test: build ## 在 kind 集群上运行端到端集成测试
+	./scripts/integration-test.sh
+
 .PHONY: clean
 clean: ## 清理构建产物
 	rm -rf $(APP) dist/

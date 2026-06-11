@@ -8,6 +8,50 @@
 //   - Builder: 分步构建别名组合
 //   - Strategy: 不同 shell 输出策略
 //   - Composite: 别名各部分（作用域+动词+资源+修饰符）组合
+//
+// ═══════════════════════════════════════════════════════════════════════════
+// 别名生成规则（由 Compatible() 函数保证）
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// 命名模式: k[作用域][动词][资源][修饰符]
+//
+// 组合层级（逐层展开，每步 compatible 检查）:
+//   0. base:     k                                          ─ 必选
+//   1. scopes:   '' / sys(--namespace=kube-system)          ─ 可选
+//   2. verbs:    g(get) / d(describe) / del(delete)         ─ 可选
+//   3. resources: po/dep/sts/svc/ing/cm/sec/no/ns           ─ 可选
+//   4. mods:     oyaml/owide/ojson/sl/w                     ─ 可选多（排列）
+//   5. ranges:   all/n/l/f                                  ─ 可选多（排列）
+//
+// ── 动词 × 资源兼容性 ──────────────────────────────────────────────────
+//            po  dep sts svc ing cm sec  no   ns
+//   g(get)    ✅  ✅  ✅  ✅  ✅  ✅  ✅  ✅  ✅
+//   d(desc)   ✅  ✅  ✅  ✅  ✅  ✅  ✅  ✅  ✅
+//   del(del)  ✅  ✅  ✅  ✅  ✅  ✅  ✅  ❌  ✅
+//
+// ── 格式修饰符（mods）— 仅限 get ─────────────────────────────────────────
+//   oyaml  -o=yaml        互斥: owide, ojson, sl
+//   owide  -o=wide        互斥: oyaml, ojson
+//   ojson  -o=json        互斥: oyaml, owide, sl
+//   sl     --show-labels  互斥: oyaml, ojson
+//   w      --watch        互斥: oyaml, ojson, owide
+//
+// ── 范围修饰符（ranges）─────────────────────────────────────────────────
+//   all  --all-namespaces  动词: g,d  互斥: del, f, no, ns, sys, n
+//   n    --namespace       动词: g,d,del
+//   l    -l                动词: g,d,del  互斥: all
+//   f    --recursive -f    动词: g,d,del  互斥: 全部资源类型
+//
+// ── 集群级资源特殊规则 ──────────────────────────────────────────────────
+//   no(nodes) / ns(namespaces): 永远不带 --all-namespaces（本身就是集群范围）
+//   no(nodes): 不跟 sys 作用域组合（kube-system 是 namespace 概念，nodes 无 namespace）
+//   sys(kube-system): 不跟 n(--namespace) 组合（sys 已锁定 namespace）
+//
+// ── 特殊别名 ─────────────────────────────────────────────────────────────
+//   以下动词不走组合生成，手工定义在 specialAliases 中:
+//   - run / apply / kustomize                不同参数签名
+//   - logs / exec / port-forward / proxy     不接受资源类型参数
+//   - rollout / top / edit / drain 等        独立子命令
 
 package main
 
@@ -37,7 +81,7 @@ var base = Component{Alias: "k", Command: "kubectl"}
 
 var scopes = []Component{
 	{Alias: "", Command: ""},
-	{Alias: "sys", Command: "--namespace=kube-system"},
+	{Alias: "sys", Command: "--namespace=kube-system", Exclude: []string{"n"}},
 }
 
 var verbs = []Component{
@@ -67,10 +111,10 @@ var mods = []Component{
 }
 
 var ranges = []Component{
-	{Alias: "all", Command: "--all-namespaces", Require: []string{"g", "d"}, Exclude: []string{"del", "f", "no", "ns", "sys"}},
+	{Alias: "all", Command: "--all-namespaces", Require: []string{"g", "d"}, Exclude: []string{"del", "f", "no", "ns", "sys", "n"}},
 	{Alias: "n", Command: "--namespace", Require: []string{"g", "d", "del"}},
 	{Alias: "l", Command: "-l", Require: []string{"g", "d", "del"}, Exclude: []string{"all"}},
-	{Alias: "f", Command: "--recursive -f", Require: []string{"g", "d", "del"}},
+	{Alias: "f", Command: "--recursive -f", Require: []string{"g", "d", "del"}, Exclude: []string{"po", "dep", "sts", "svc", "ing", "cm", "sec", "no", "ns"}},
 }
 
 // ─── 特殊别名（不适用组合生成） ─────────────────────────────────────────────
