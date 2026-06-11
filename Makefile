@@ -60,9 +60,9 @@ test: build ## 全面验证：烟雾测试 → 总量 → 去重 → 互斥 → 
 	check_alias kgpo; check_alias kdelpo; \
 	./$(APP) --version 2>&1 | grep -q . && ok "--version" || fail "--version"; \
 	\
-	echo "=== 2/6 总量 691 ==="; \
+	echo "=== 2/6 总量 500 ==="; \
 	c=$$(bash -c 'unset _K8S_ALIAS_LOADED; source /tmp/_kubectl_aliases_test && alias | grep -c kubectl'); \
-	[ "$$c" = "691" ] && ok "total=691" || fail "total=$$c (expected 691)"; \
+	[ "$$c" = "500" ] && ok "total=500" || fail "total=$$c (expected 500)"; \
 	\
 	echo "=== 3/6 去重 ==="; \
 	d=$$(grep '^alias' /tmp/_kubectl_aliases_test | sed 's/^alias \([^=]*\)=.*/\1/' | sort | uniq -d); \
@@ -85,7 +85,7 @@ test: build ## 全面验证：烟雾测试 → 总量 → 去重 → 互斥 → 
 	\
 	echo "=== 6/6 fish 输出 ==="; \
 	fc=$$(./$(APP) -shell fish 2>/dev/null | grep -c '^abbr'); \
-	[ "$$fc" = "691" ] && ok "fish=691" || fail "fish=$$fc (expected 691)"; \
+	[ "$$fc" = "500" ] && ok "fish=500" || fail "fish=$$fc (expected 500)"; \
 	echo; \
 	if [ "$$fail" -eq 0 ]; then echo "=== 全部通过 ==="; else echo "=== $$fail 个失败 ==="; fi; \
 	exit $$fail

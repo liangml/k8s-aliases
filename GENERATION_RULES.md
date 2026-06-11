@@ -197,5 +197,5 @@ generateCombos()
 
 ## 已废弃/过时的生成产物
 
-当前 `main.go` 生成 **635 条**合法别名（0 条非法 resource+f 组合）。
+当前 `main.go` 生成 **500 条**合法别名（0 条非法 resource+f 组合）。
 仓库里提交的 `.kubectl_aliases`（691 条）包含大量过时的非法组合，需要重新生成。
