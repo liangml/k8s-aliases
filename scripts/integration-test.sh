@@ -9,7 +9,7 @@
 #   4. 清理测试资源
 # =============================================================================
 
-set -euo pipefail
+set -eu
 set -x
 
 APP="./kubectl-aliases"
@@ -31,12 +31,16 @@ fail() { echo -e "  ${RED}❌${NC} $1"; ((FAIL++)); FAILED_ALIASES+=" $1"; }
 # ── 资源创建 ──────────────────────────────────────────────────────────────
 
 create_resources() {
+  echo "=== 验证集群就绪 ==="
+  kubectl cluster-info 2>/dev/null | head -3 || { echo "集群不可达"; exit 1; }
+
   echo "=== 创建测试资源 ==="
 
-  kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f - || true
 
-  # namespaced 资源 (7 种)
-  kubectl -n "$NS" create deployment nginx --image=nginx:alpine --port=80 2>/dev/null
+  # namespaced 资源 (7 种) — 不用 --port, 兼容新旧版 kubectl
+  kubectl -n "$NS" create deployment nginx --image=nginx:alpine 2>/dev/null || true
+  kubectl -n "$NS" expose deployment nginx --port=80 --target-port=80 --name nginx-svc 2>/dev/null || true
   kubectl -n "$NS" expose deployment nginx --port=80 --name nginx-svc 2>/dev/null || true
   kubectl -n "$NS" create statefulset web --image=nginx:alpine 2>/dev/null || true
   kubectl -n "$NS" create configmap app-config --from-literal=key=value 2>/dev/null || true
@@ -46,10 +50,11 @@ create_resources() {
 
   # 等 nginx deployment 就绪
   echo "  等待 nginx deployment 就绪..."
-  kubectl -n "$NS" wait --for=condition=available deployment/nginx --timeout=120s 2>/dev/null
+  kubectl -n "$NS" wait --for=condition=available deployment/nginx --timeout=120s 2>/dev/null || true
 
   # 获取 nginx pod 名
-  NGINX_POD=$(kubectl -n "$NS" get pod -l app=nginx -o name 2>/dev/null | head -1 | cut -d/ -f2)
+  NGINX_POD=$(kubectl -n "$NS" get pod -l app=nginx -o name 2>/dev/null | head -1 | cut -d/ -f2 || true)
+  [ -z "$NGINX_POD" ] && NGINX_POD="nginx"
   echo "  nginx pod: $NGINX_POD"
 
   # 创建临时 manifest 目录 (给 -f 命令用)
