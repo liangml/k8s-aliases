@@ -10,6 +10,7 @@
 # =============================================================================
 
 set -euo pipefail
+set -x
 
 APP="./kubectl-aliases"
 NS="test-aliases"
