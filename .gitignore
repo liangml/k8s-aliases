@@ -1,0 +1,17 @@
+# 编译产物
+kubectl-aliases
+kubectl-aliases.exe
+dist/
+
+# IDE / 编辑器
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# 临时测试文件
+/tmp/_kubectl_aliases_test
