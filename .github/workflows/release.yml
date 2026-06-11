@@ -37,9 +37,9 @@ jobs:
       - name: Package release artifacts
         run: |
           mkdir -p upload
-          # 别名文件
-          cp .kubectl_aliases upload/
-          cp .kubectl_aliases.fish upload/
+          # 别名文件（重命名去掉前导点，避免 GitHub 转成 default. 前缀）
+          cp .kubectl_aliases upload/kubectl_aliases
+          cp .kubectl_aliases.fish upload/kubectl_aliases.fish
           # 各平台二进制
           for f in dist/*; do
             name=$(basename "$f")
@@ -65,8 +65,8 @@ jobs:
             ## kubectl-aliases ${{ github.ref_name }}
 
             ### 包含文件
-            - `.kubectl_aliases` — bash/zsh 别名（691 条）
-            - `.kubectl_aliases.fish` — fish 别名（691 条）
+            - `kubectl_aliases` — bash/zsh 别名（691 条）
+            - `kubectl_aliases.fish` — fish 别名（691 条）
             - `kubectl-aliases-darwin-amd64.gz` — macOS Intel
             - `kubectl-aliases-darwin-arm64.gz` — macOS Apple Silicon
             - `kubectl-aliases-linux-amd64.gz` — Linux x86_64
