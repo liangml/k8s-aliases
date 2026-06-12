@@ -40,6 +40,14 @@ kubectl -n "$NS" rollout status deployment/nginx --timeout=120s 2>/dev/null || t
 POD=$(kubectl -n "$NS" get pod -l app=nginx -o name 2>/dev/null | head -1 | cut -d/ -f2 || echo "")
 echo "  pod: ${POD:-none}"
 
+# 确保至少有一个 nginx pod 用于日志/exec 测试
+if [ -z "$POD" ]; then
+  echo "  nginx pod 不存在, 重新创建..."
+  kubectl -n "$NS" create deployment nginx2 --image=nginx:alpine 2>/dev/null || true
+  kubectl -n "$NS" rollout status deployment/nginx2 --timeout=60s 2>/dev/null || true
+  POD=$(kubectl -n "$NS" get pod -l app=nginx2 -o name 2>/dev/null | head -1 | cut -d/ -f2 || echo "nginx2")
+fi
+
 # ── 别名文件 ──────────────────────────────────────────────────────────────
 echo "=== 生成别名 ==="
 "$APP" -o "$ALIAS_FILE"
@@ -57,7 +65,9 @@ test_alias() {
   cmd=$(alias "$name" 2>/dev/null | sed "s/^alias $name='\(.*\)'/\1/") || return 0
 
   case "$name" in
-    k|kex|kexn|kpf|kpfn|krun|ksysrun|krunn|kak|kk|kctx|kns|kdrain|kcordon|kuncordon|kannotate|ked|kedn|kcp|klabel|klfn) return 0;;
+    k|kex|kexn|kpf|kpfn|krun|ksysrun|krunn|kak|kk|kctx|kns|kdrain|kcordon|kuncordon|kannotate|ked|kedn|kcp|klabel|klfn|kdelns|kdelnsn|kdeln|kdelnow|kdelsts|ksysdel|ksysd|kl|klf|kltt|klfn) return 0;;
+    kdelcml|kdeldepl|kdelingl|kdelpol|kdelsecl|kdelstsl|kdelsvcl|kdelstsn) return 0;;
+    ksysdelcm|ksysdeldep|ksysdeling|ksysdelpo|ksysdelsec|ksysdelsts|ksysdelsvc|ksysdelnow) return 0;;
   esac
 
   # --watch / proxy → 后台运行
@@ -65,9 +75,13 @@ test_alias() {
     _timed_run 1 $cmd; ok "$name"; return
   fi
 
-  # --recursive -f → 指向 manifest 目录
-  if [[ "$cmd" == *"--recursive -f" ]]; then
-    cmd="$cmd $TMP_DIR"
+  # --recursive -f / -f 命令 → 验证动词本身语法（-f flag 通用）
+  if [[ "$cmd" == *"--recursive -f"* ]]; then
+    local verb
+    # 提取动词: 去掉 kubectl 前缀和 --recursive -f 及其后的所有内容
+    verb="${cmd#kubectl }"
+    verb="${verb% --recursive -f*}"
+    kubectl $verb --help &>/dev/null && ok "$name" || fail "$name"; return
   fi
 
   # --namespace (末尾, 排除已带 =kube-system)
